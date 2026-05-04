@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -10,43 +9,53 @@ import { hasSupabaseEnv, isInvitedEmail } from "@/lib/supabase/env";
 import { noteSchema, reactionSchema } from "@/lib/validation";
 import { getViewer } from "@/lib/data";
 
-function requestOrigin(host: string | null, protocol: string | null) {
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
-  }
 
-  return `${protocol ?? "https"}://${host ?? "localhost:3000"}`;
-}
-
-export async function requestMagicLinkAction(formData: FormData) {
+export async function signInAction(formData: FormData) {
   if (!hasSupabaseEnv()) {
     redirect("/app");
   }
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    redirect("/?error=invalid-credentials");
+  }
+
+  redirect("/app");
+}
+
+export async function signUpAction(formData: FormData) {
+  if (!hasSupabaseEnv()) {
+    redirect("/app");
+  }
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
 
   if (!isInvitedEmail(email)) {
-    redirect("/?error=invite-only");
+    redirect("/?tab=signup&error=invite-only");
   }
 
   const supabase = await createServerSupabaseClient();
-  const headerStore = await headers();
-  const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
-  const protocol = headerStore.get("x-forwarded-proto") ?? "http";
-  const redirectTo = `${requestOrigin(host, protocol)}/auth/callback`;
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: redirectTo,
-    },
-  });
+  const { data, error } = await supabase.auth.signUp({ email, password });
 
   if (error) {
-    redirect("/?error=auth");
+    redirect("/?tab=signup&error=auth");
   }
 
-  redirect("/?sent=1");
+  if (!data.session) {
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) {
+      redirect("/?error=invalid-credentials");
+    }
+  }
+
+  redirect("/app");
 }
 
 export async function signOutAction() {

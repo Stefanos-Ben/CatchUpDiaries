@@ -11,8 +11,9 @@ type NewMomentPageProps = {
 
 export default async function NewMomentPage({ searchParams }: NewMomentPageProps) {
   const viewer = await requireViewer();
+  const today = slugDate(new Date());
   const params = (await searchParams) ?? {};
-  const initialDate = typeof params.date === "string" ? params.date : slugDate(new Date());
+  const initialDate = typeof params.date === "string" ? params.date : today;
 
   return (
     <div className="space-y-6">

@@ -4,7 +4,7 @@ import { ChevronLeft, Plus } from "lucide-react";
 
 import { MomentCard } from "@/components/moment-card";
 import { getDayFeed, requireViewer } from "@/lib/data";
-import { formatDisplayDate } from "@/lib/utils";
+import { formatDisplayDate, slugDate } from "@/lib/utils";
 
 type DayPageProps = {
   params: Promise<{
@@ -20,6 +20,7 @@ export default async function DayPage({ params }: DayPageProps) {
 
   const viewer = await requireViewer();
   const dayFeed = await getDayFeed(date);
+  const isToday = date === slugDate(new Date());
 
   return (
     <div className="space-y-6">
@@ -37,13 +38,15 @@ export default async function DayPage({ params }: DayPageProps) {
               keeping in one place.
             </p>
           </div>
-          <Link
-            href={`/app/moment/new?date=${date}`}
-            className="button-pop inline-flex items-center gap-2 bg-ink px-4 py-2 text-sm font-medium text-white"
-          >
-            <Plus className="size-4" />
-            Add moment
-          </Link>
+          {isToday ? (
+            <Link
+              href={`/app/moment/new?date=${date}`}
+              className="button-pop inline-flex items-center gap-2 bg-ink px-4 py-2 text-sm font-medium text-white"
+            >
+              <Plus className="size-4" />
+              Add moment
+            </Link>
+          ) : null}
         </div>
       </div>
 
@@ -58,15 +61,19 @@ export default async function DayPage({ params }: DayPageProps) {
           <p className="text-xs uppercase tracking-[0.28em] text-ink/45">Nothing saved yet</p>
           <h2 className="mt-3 font-display text-4xl font-black text-ink">This page is still waiting for a mood.</h2>
           <p className="mt-3 text-sm leading-7 text-ink/65">
-            Add the first moment for this day and give it a little texture.
+            {isToday
+              ? "Add the first moment for this day and give it a little texture."
+              : "Nothing was saved for this day."}
           </p>
-          <Link
-            href={`/app/moment/new?date=${date}`}
-            className="button-pop mt-6 inline-flex items-center gap-2 bg-ink px-5 py-3 text-sm font-medium text-white"
-          >
-            <Plus className="size-4" />
-            Start this day
-          </Link>
+          {isToday ? (
+            <Link
+              href={`/app/moment/new?date=${date}`}
+              className="button-pop mt-6 inline-flex items-center gap-2 bg-ink px-5 py-3 text-sm font-medium text-white"
+            >
+              <Plus className="size-4" />
+              Start this day
+            </Link>
+          ) : null}
         </section>
       )}
     </div>

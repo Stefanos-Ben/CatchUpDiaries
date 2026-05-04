@@ -4,6 +4,7 @@ import { STORAGE_BUCKET } from "@/lib/constants";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv, isInvitedEmail } from "@/lib/supabase/env";
 import { momentSchema, validatePhotoCount } from "@/lib/validation";
+import { slugDate } from "@/lib/utils";
 
 type SaveMomentInput = {
   id?: string;
@@ -91,6 +92,10 @@ export async function saveMoment(input: SaveMomentInput) {
 
   const { supabase, user } = await requireLiveViewer();
   validatePhotoCount(input.files.length);
+
+  if (!input.id && parsed.data.entryDate !== slugDate(new Date())) {
+    throw new Error("New moments can only be added for today.");
+  }
 
   if (input.id) {
     const { data: existing } = await supabase

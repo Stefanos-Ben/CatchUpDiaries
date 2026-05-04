@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, HeartHandshake, MessageCircleHeart, Sparkles } from "lucide-react";
 
-import { requestMagicLinkAction } from "@/app/actions";
+import { signInAction, signUpAction } from "@/app/actions";
 import { APP_NAME } from "@/lib/constants";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 
@@ -12,7 +12,7 @@ type LandingPageProps = {
 export default async function LandingPage({ searchParams }: LandingPageProps) {
   const params = (await searchParams) ?? {};
   const error = typeof params.error === "string" ? params.error : null;
-  const sent = params.sent === "1";
+  const tab = params.tab === "signup" ? "signup" : "signin";
   const demoMode = !hasSupabaseEnv();
 
   return (
@@ -107,60 +107,117 @@ export default async function LandingPage({ searchParams }: LandingPageProps) {
         <section className="flex items-center">
           <div className="panel-pop relative w-full overflow-hidden rounded-[2.75rem] p-8 lg:p-10">
             <div className="absolute -right-6 bottom-6 h-32 w-32 rounded-[39%_61%_57%_43%/45%_42%_58%_55%] bg-blush/40" />
-            <p className="text-xs uppercase tracking-[0.35em] text-ink/45">
-              {demoMode ? "Preview mode" : "Invite-only access"}
-            </p>
-            <h2 className="mt-4 max-w-md font-display text-4xl font-black text-ink">
-              {demoMode ? "Explore the web MVP" : "Step into your shared space"}
-            </h2>
-            <p className="mt-4 text-sm leading-7 text-ink/68">
-              {demoMode
-                ? "Supabase keys are not configured yet, so the app opens in a read-only dreamy demo. Add your environment variables when you want real auth, storage, and posting."
-                : "Use one of the invited emails and we’ll send a magic link. No public accounts, no audience, just a private space for the people you invite."}
-            </p>
-
-            {sent ? (
-              <div className="mt-6 rounded-[1.6rem] border border-lagoon/25 bg-lagoon/10 px-4 py-3 text-sm text-ink">
-                Magic link sent. Check your inbox and then come right back.
-              </div>
-            ) : null}
-
-            {error ? (
-              <div className="mt-6 rounded-[1.6rem] border border-rose/25 bg-rose/10 px-4 py-3 text-sm text-rose">
-                {error === "invite-only"
-                  ? "That email is not on the invite list for this space."
-                  : "The sign-in flow blurred out for a second. Try again."}
-              </div>
-            ) : null}
 
             {demoMode ? (
-              <Link
-                href="/app"
-                className="button-pop mt-8 inline-flex items-center gap-2 bg-ink px-5 py-3 text-sm font-medium text-white"
-              >
-                Open demo app
-                <ArrowRight className="size-4" />
-              </Link>
-            ) : (
-              <form action={requestMagicLinkAction} className="mt-8 space-y-4">
-                <label className="block space-y-2">
-                  <span className="text-sm font-medium text-ink/78">Email</span>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="yourname@example.com"
-                    required
-                    className="w-full rounded-[1.4rem] border border-line bg-cloud/65 px-4 py-3 text-sm text-ink outline-none transition focus:border-rose"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  className="button-pop inline-flex items-center gap-2 bg-ink px-5 py-3 text-sm font-medium text-white"
+              <>
+                <p className="text-xs uppercase tracking-[0.35em] text-ink/45">Preview mode</p>
+                <h2 className="mt-4 max-w-md font-display text-4xl font-black text-ink">Explore the web MVP</h2>
+                <p className="mt-4 text-sm leading-7 text-ink/68">
+                  Supabase keys are not configured yet, so the app opens in a read-only dreamy demo.
+                </p>
+                <Link
+                  href="/app"
+                  className="button-pop mt-8 inline-flex items-center gap-2 bg-ink px-5 py-3 text-sm font-medium text-white"
                 >
-                  Send magic link
+                  Open demo app
                   <ArrowRight className="size-4" />
-                </button>
-              </form>
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-xs uppercase tracking-[0.35em] text-ink/45">Your shared space</p>
+                <h2 className="mt-4 max-w-md font-display text-4xl font-black text-ink">
+                  {tab === "signup" ? "Create your account" : "Welcome back"}
+                </h2>
+
+                <div className="mt-6 flex gap-1 rounded-[1.4rem] bg-cloud/60 p-1">
+                  <Link
+                    href="/"
+                    className={`flex-1 rounded-[1.1rem] py-2 text-center text-sm font-medium transition ${tab === "signin" ? "bg-white shadow-card text-ink" : "text-ink/50 hover:text-ink/75"}`}
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/?tab=signup"
+                    className={`flex-1 rounded-[1.1rem] py-2 text-center text-sm font-medium transition ${tab === "signup" ? "bg-white shadow-card text-ink" : "text-ink/50 hover:text-ink/75"}`}
+                  >
+                    Sign up
+                  </Link>
+                </div>
+
+                {error ? (
+                  <div className="mt-4 rounded-[1.4rem] border border-rose/25 bg-rose/10 px-4 py-3 text-sm text-rose">
+                    {error === "invite-only"
+                      ? "That email isn’t on the invite list for this space."
+                      : error === "invalid-credentials"
+                      ? "Wrong email or password."
+                      : "Something went wrong. Try again."}
+                  </div>
+                ) : null}
+
+                {tab === "signin" ? (
+                  <form action={signInAction} className="mt-5 space-y-4">
+                    <label className="block space-y-2">
+                      <span className="text-sm font-medium text-ink/78">Email</span>
+                      <input
+                        type="email"
+                        name="email"
+                        placeholder="yourname@example.com"
+                        required
+                        className="w-full rounded-[1.4rem] border border-line bg-cloud/65 px-4 py-3 text-sm text-ink outline-none transition focus:border-rose"
+                      />
+                    </label>
+                    <label className="block space-y-2">
+                      <span className="text-sm font-medium text-ink/78">Password</span>
+                      <input
+                        type="password"
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                        className="w-full rounded-[1.4rem] border border-line bg-cloud/65 px-4 py-3 text-sm text-ink outline-none transition focus:border-rose"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      className="button-pop inline-flex items-center gap-2 bg-ink px-5 py-3 text-sm font-medium text-white"
+                    >
+                      Sign in
+                      <ArrowRight className="size-4" />
+                    </button>
+                  </form>
+                ) : (
+                  <form action={signUpAction} className="mt-5 space-y-4">
+                    <label className="block space-y-2">
+                      <span className="text-sm font-medium text-ink/78">Email</span>
+                      <input
+                        type="email"
+                        name="email"
+                        placeholder="yourname@example.com"
+                        required
+                        className="w-full rounded-[1.4rem] border border-line bg-cloud/65 px-4 py-3 text-sm text-ink outline-none transition focus:border-rose"
+                      />
+                    </label>
+                    <label className="block space-y-2">
+                      <span className="text-sm font-medium text-ink/78">Password</span>
+                      <input
+                        type="password"
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                        minLength={6}
+                        className="w-full rounded-[1.4rem] border border-line bg-cloud/65 px-4 py-3 text-sm text-ink outline-none transition focus:border-rose"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      className="button-pop inline-flex items-center gap-2 bg-ink px-5 py-3 text-sm font-medium text-white"
+                    >
+                      Create account
+                      <ArrowRight className="size-4" />
+                    </button>
+                  </form>
+                )}
+              </>
             )}
           </div>
         </section>

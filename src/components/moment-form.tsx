@@ -137,16 +137,25 @@ export function MomentForm({ mode, initialDate, initialMoment, demoMode }: Momen
       className="panel-pop space-y-6 rounded-[2.4rem] p-6"
     >
       <div className="grid gap-5 md:grid-cols-[1.2fr_0.8fr]">
-        <label className="space-y-2">
+        <div className="space-y-2">
           <span className="text-sm font-medium text-ink/75">Date</span>
-          <input
-            type="date"
-            name="entryDate"
-            defaultValue={initialMoment?.entryDate ?? initialDate}
-            className="w-full rounded-2xl border border-line bg-cloud/70 px-4 py-3 text-sm text-ink outline-none ring-0 transition focus:border-rose"
-            required
-          />
-        </label>
+          {mode === "create" ? (
+            <>
+              <input type="hidden" name="entryDate" value={initialDate} />
+              <div className="w-full rounded-2xl border border-line bg-cloud/40 px-4 py-3 text-sm text-ink/60">
+                {initialDate}
+              </div>
+            </>
+          ) : (
+            <input
+              type="date"
+              name="entryDate"
+              defaultValue={initialMoment?.entryDate ?? initialDate}
+              className="w-full rounded-2xl border border-line bg-cloud/70 px-4 py-3 text-sm text-ink outline-none ring-0 transition focus:border-rose"
+              required
+            />
+          )}
+        </div>
 
         <label className="space-y-2">
           <span className="text-sm font-medium text-ink/75">Mood</span>
