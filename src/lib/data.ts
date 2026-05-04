@@ -5,7 +5,7 @@ import { getDemoCalendarDaySummaries, getDemoDayFeed, getDemoMomentById, getDemo
 import { DEMO_ALLOWED_EMAILS, STORAGE_BUCKET } from "@/lib/constants";
 import { clipText } from "@/lib/utils";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { hasSupabaseEnv, isInvitedEmail } from "@/lib/supabase/env";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 import type {
   CalendarDaySummary,
   DayFeedResponse,
@@ -77,7 +77,7 @@ async function ensureViewerProfile() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user?.id || !user.email || !isInvitedEmail(user.email)) {
+  if (!user?.id || !user.email) {
     return null;
   }
 

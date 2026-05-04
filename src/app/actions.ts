@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { MAX_NOTE_LENGTH } from "@/lib/constants";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { hasSupabaseEnv, isInvitedEmail } from "@/lib/supabase/env";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { noteSchema, reactionSchema } from "@/lib/validation";
 import { getViewer } from "@/lib/data";
 
@@ -35,10 +35,6 @@ export async function signUpAction(formData: FormData) {
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-
-  if (!isInvitedEmail(email)) {
-    redirect("/?tab=signup&error=invite-only");
-  }
 
   const supabase = await createServerSupabaseClient();
 

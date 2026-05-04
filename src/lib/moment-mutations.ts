@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache";
 
 import { STORAGE_BUCKET } from "@/lib/constants";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { hasSupabaseEnv, isInvitedEmail } from "@/lib/supabase/env";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { momentSchema, validatePhotoCount } from "@/lib/validation";
 import { slugDate } from "@/lib/utils";
 
@@ -30,8 +30,8 @@ async function requireLiveViewer() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user?.id || !user.email || !isInvitedEmail(user.email)) {
-    throw new Error("Please sign in with one of the invited accounts.");
+  if (!user?.id) {
+    throw new Error("Please sign in to continue.");
   }
 
   return { supabase, user };

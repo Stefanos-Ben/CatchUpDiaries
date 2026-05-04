@@ -147,9 +147,7 @@ export default async function LandingPage({ searchParams }: LandingPageProps) {
 
                 {error ? (
                   <div className="mt-4 rounded-[1.4rem] border border-rose/25 bg-rose/10 px-4 py-3 text-sm text-rose">
-                    {error === "invite-only"
-                      ? "That email isn’t on the invite list for this space."
-                      : error === "invalid-credentials"
+                    {error === "invalid-credentials"
                       ? "Wrong email or password."
                       : "Something went wrong. Try again."}
                   </div>
